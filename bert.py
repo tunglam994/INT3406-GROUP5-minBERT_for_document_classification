@@ -166,6 +166,7 @@ class BertModel(BertPreTrainedModel):
     self.init_weights()
 
   def embed(self, input_ids):
+    input_ids = input_ids[:, :512]  # truncate input sequence to 512  
     input_shape = input_ids.size()
     seq_length = input_shape[1]
 
