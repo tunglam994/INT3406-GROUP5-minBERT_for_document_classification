@@ -271,6 +271,7 @@ def get_args():
     parser.add_argument("--lr", type=float, help="learning rate, default lr for 'pretrain': 1e-3, 'finetune': 1e-5",
                         default=1e-5)
 
+    parser.add_argument("--filepath", type=str, default="kaggle/working")
     args = parser.parse_args()
     print(f"args: {vars(args)}")
     return args
