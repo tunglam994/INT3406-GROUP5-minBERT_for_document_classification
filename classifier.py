@@ -32,7 +32,7 @@ class BertSentClassifier(torch.nn.Module):
     def __init__(self, config):
         super(BertSentClassifier, self).__init__()
         self.num_labels = config.num_labels
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
 
         # pretrain mode does not require updating bert paramters.
         for param in self.bert.parameters():
@@ -80,7 +80,7 @@ class BertDataset(Dataset):
     def __init__(self, dataset, args):
         self.dataset = dataset
         self.p = args
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
 
     def __len__(self):
         return len(self.dataset)
@@ -128,7 +128,7 @@ class BertDataset(Dataset):
 # create the data which is a list of (sentence, label, token for the labels)
 def create_data(filename, author2embedding_filename='data/author2embedding.pickle', flag='train'):
     # specify the tokenizer
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
     num_labels = {}
     data = []
 
@@ -222,7 +222,7 @@ def train(args):
     #### Init model
     config = {'hidden_dropout_prob': args.hidden_dropout_prob,
               'num_labels': num_labels,
-              'hidden_size': 768,
+              'hidden_size': 256,
               'data_dir': '.',
               'author_size': 200,
               'use_author': args.use_author,

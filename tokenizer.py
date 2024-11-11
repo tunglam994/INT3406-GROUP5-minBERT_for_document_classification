@@ -27,14 +27,14 @@ FULL_TOKENIZER_FILE = "tokenizer.json"
 VOCAB_FILES_NAMES = {"vocab_file": "vocab.txt"}
 PRETRAINED_VOCAB_FILES_MAP = {
     "vocab_file": {
-        "bert-base-uncased": "https://huggingface.co/bert-base-uncased/resolve/main/vocab.txt"
+        "google/bert_uncased_L-4_H-256_A-4": "https://huggingface.co/google/bert_uncased_L-4_H-256_A-4/resolve/main/vocab.txt"
     }
 }
 PRETRAINED_POSITIONAL_EMBEDDINGS_SIZES = {
-    "bert-base-uncased": 512
+    "google/bert_uncased_L-4_H-256_A-4": 512
 }
 PRETRAINED_INIT_CONFIGURATION = {
-    "bert-base-uncased": {"do_lower_case": True}
+    "google/bert_uncased_L-4_H-256_A-4": {"do_lower_case": True}
 }
 
 
@@ -2000,8 +2000,8 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         :obj:`int`: The number of tokens actually added to the vocabulary.
     Examples::
         # Let's see how to increase the vocabulary of Bert model and tokenizer
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        model = BertModel.from_pretrained('bert-base-uncased')
+        tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
+        model = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
         num_added_toks = tokenizer.add_tokens(['new_tok1', 'my_new-tok2'])
         print('We have added', num_added_toks, 'tokens')
         # Note: resize_token_embeddings expects to receive the full size of the new vocabulary, i.e. the length of the tokenizer.
