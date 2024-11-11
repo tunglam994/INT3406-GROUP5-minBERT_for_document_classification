@@ -232,6 +232,7 @@ def get_args():
     parser.add_argument("--hidden_dropout_prob", type=float, default=0.3)
     parser.add_argument("--lr", type=float, help="learning rate, default lr for 'pretrain': 1e-3, 'finetune': 1e-5",
                         default=1e-5)
+    parser.add_argument("--filepath", type=str, default="kaggle/working")
 
     args = parser.parse_args()
     print(f"args: {vars(args)}")
@@ -239,7 +240,6 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    args.filepath = f'{args.option}-{args.epochs}-{args.lr}-second.pt' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     train(args)
     # test(args)
