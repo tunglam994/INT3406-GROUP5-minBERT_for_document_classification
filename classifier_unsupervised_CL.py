@@ -87,17 +87,30 @@ class BertDataset(Dataset):
         return batches
 
 
-def create_data(filename, flag='train'):
+def create_data(filename, flag='train', max_length=512):
+    # specify the tokenizer
+    # tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
     num_labels = {}
     data = []
 
     with open(filename, 'r',  encoding='utf-8') as fp:
         for line in fp:
+            # label, org_sent = line.split(' ||| ')
+            # org_sent = line.split(' ||| ')
+            # sent = org_sent.lower().strip()
             sent = line.strip()
             tokens = tokenizer.tokenize("[CLS] " + sent + " [SEP]")
+            if len(tokens) > max_length:
+                tokens = tokens[:max_length]
+            # label = int(label.strip())
+            # if label not in num_labels:
+            #     num_labels[label] = len(num_labels)
             data.append((sent, tokens))
     print(f"load {len(data)} data from {filename}")
+    # if flag == 'train':
+    #     return data, len(num_labels)
+    # else:
     return data
 
 def save_model(model, optimizer, args, config, filepath):
