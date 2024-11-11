@@ -165,7 +165,7 @@ def train(args):
 
             sim_matrix = F.cosine_similarity(emb1.unsqueeze(1), emb2.unsqueeze(0), dim=-1)
             sim_matrix = sim_matrix / 0.05
-            labels_CL = torch.arange(args.batch_size).long()
+            labels_CL = torch.arange(args.batch_size).long().to(device)
             loss = F.cross_entropy(sim_matrix, labels_CL)
 
             optimizer.zero_grad()

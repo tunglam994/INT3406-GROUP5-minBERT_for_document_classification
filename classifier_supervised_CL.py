@@ -31,16 +31,17 @@ class Loss():
         self.cos = nn.CosineSimilarity(dim=-1)
 
     def train_loss_fct(self, criterion, a, p, n, neg_weight=0):
+        device = torch.device('cuda') if self.args.use_gpu else torch.device('cpu')
         positive_similarity = self.cos(a.unsqueeze(1), p.unsqueeze(0)) / self.args.temperature
         negative_similarity = self.cos(a.unsqueeze(1), n.unsqueeze(0)) / self.args.temperature
         
-        cosine_similarity = torch.cat([positive_similarity, negative_similarity], dim=1)
+        cosine_similarity = torch.cat([positive_similarity, negative_similarity], dim=1).to(device)
 
-        labels = torch.arange(cosine_similarity.size(0)).long()
+        labels = torch.arange(cosine_similarity.size(0)).long().to(device)
 
         weights = torch.tensor(
             [[0.0] * (cosine_similarity.size(-1) - negative_similarity.size(-1)) + [0.0] * i + [neg_weight] + [0.0] * (negative_similarity.size(-1) - i - 1) for i in range(negative_similarity.size(-1))]
-        )
+        ).to(device)
 
         cosine_similarity = cosine_similarity + weights
         loss = criterion(cosine_similarity, labels)
