@@ -133,7 +133,7 @@ def create_data(filename, flag='train'):
 
     df = pd.read_csv(filename)
     for _, row in df.iterrows():
-        id = row['id']
+        # id = row['id']
         anchor = row['sent0'].lower()
         pos = row['sent1'].lower()
         neg = row['hard_neg'].lower()
