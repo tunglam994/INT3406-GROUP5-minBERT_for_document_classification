@@ -48,8 +48,8 @@ class BertSelfAttention(nn.Module):
     # Read the `forward` function first.
     # It already transforms everything.
     scores = torch.matmul(query, torch.transpose(key, 2, 3)) / math.sqrt(key.shape[-1])
-    print(scores.shape)
-    print(attention_mask.shape)
+    # print(scores.shape)
+    # print(attention_mask.shape)
     scores = scores.masked_fill(attention_mask < 0, -10000)
     
     # normalize the scores
