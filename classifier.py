@@ -6,10 +6,8 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import classification_report, f1_score, recall_score, accuracy_score
 
-# change it with respect to the original model
 from tokenizer import BertTokenizer
 from bert import BertModel
-# from optimizer import AdamW
 from torch.optim import AdamW
 from tqdm import tqdm
 import pandas as pd
@@ -30,7 +28,7 @@ class BertSentClassifier(torch.nn.Module):
     def __init__(self, config):
         super(BertSentClassifier, self).__init__()
         self.num_labels = config.num_labels
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
 
         # pretrain mode does not require updating bert paramters.
         for param in self.bert.parameters():
@@ -39,26 +37,20 @@ class BertSentClassifier(torch.nn.Module):
             elif config.option == 'finetune':
                 param.requires_grad = True
 
-        # todo
-        # raise NotImplementedError
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
         self.project = torch.nn.Linear(config.hidden_size, config.num_labels)
         self.softmax = torch.nn.LogSoftmax(dim=-1)
 
     def forward(self, input_ids, attention_mask):
-        # todo
-        # the final bert contextualize embedding is the hidden state of [CLS] token (the first token)
-        # raise NotImplementedError
         output = self.bert(input_ids, attention_mask)
         pooled = output['pooler_output']
         return self.softmax(self.project(self.dropout(pooled)))
 
-# create a custom Dataset Class to be used for the dataloader
 class BertDataset(Dataset):
     def __init__(self, dataset, args):
         self.dataset = dataset
         self.p = args
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
 
     def __len__(self):
         return len(self.dataset)
@@ -99,8 +91,6 @@ class BertDataset(Dataset):
 
         return batches
 
-
-# create the data which is a list of (sentence, label, token for the labels)
 def create_data(filename, flag='train'):
     # specify the tokenizer
     tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
@@ -133,7 +123,6 @@ def create_data(filename, flag='train'):
     else:
         return data
 
-# perform model evaluation in terms of the accuracy and f1 score.
 def model_eval(dataloader, model, device):
     model.eval() # switch to eval model, will turn off randomness like dropout
     y_true = []
@@ -176,8 +165,7 @@ def save_model(model, optimizer, args, config, filepath):
 
 def train(args):
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
-    #### Load data
-    # create the data and its corresponding datasets and dataloader
+
     train_data, num_labels = create_data(args.train, 'train')
     dev_data = create_data(args.dev, 'valid')
 
@@ -189,7 +177,6 @@ def train(args):
     dev_dataloader = DataLoader(dev_dataset, shuffle=False, batch_size=args.batch_size,
                                 collate_fn=dev_dataset.collate_fn)
 
-    #### Init model
     config = {'hidden_dropout_prob': args.hidden_dropout_prob,
               'num_labels': num_labels,
               'hidden_size': 768,
@@ -198,7 +185,6 @@ def train(args):
 
     config = SimpleNamespace(**config)
 
-    # initialize the Senetence Classification Model
     model = BertSentClassifier(config)
     if args.pretrained_model is not None:
         save = torch.load(args.pretrained_model)
@@ -208,12 +194,10 @@ def train(args):
     model = model.to(device)
 
     lr = args.lr
-    ## specify the optimizer
     optimizer = AdamW(model.parameters(), lr=lr)
     best_dev_acc = 0
     
 
-    ## run for the specified number of epochs
     for epoch in range(args.epochs):
         model.train()
         train_loss = 0
@@ -309,4 +293,4 @@ if __name__ == "__main__":
     args.filepath = f'{args.option}-{args.epochs}-{args.lr}-second.pt' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     train(args)
-    test(args)
+    # test(args)
