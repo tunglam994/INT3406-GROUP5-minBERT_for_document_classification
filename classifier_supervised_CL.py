@@ -214,11 +214,20 @@ def train(args):
             b_ids_neg = b_ids_neg.to(device)
             b_mask_neg = b_mask_neg.to(device)
 
+            b_ids = torch.cat((b_ids_anchor, b_ids_pos, b_ids_neg), dim=0)
+            b_mask = torch.cat((b_mask_anchor, b_mask_pos, b_mask_neg), dim=0)
+            
+            pooler = model(b_ids, b_mask)
+            len = pooler.shape[0]
+            anchor_pooler = pooler[:len//3]
+            pos_pooler = pooler[len//3:2*len//3]
+            neg_pooler = pooler[2*len//3:]
+
             optimizer.zero_grad()
 
-            anchor_pooler = model(b_ids_anchor, b_mask_anchor)
-            pos_pooler = model(b_ids_pos, b_mask_pos)
-            neg_pooler = model(b_ids_neg, b_mask_neg)
+            # anchor_pooler = model(b_ids_anchor, b_mask_anchor)
+            # pos_pooler = model(b_ids_pos, b_mask_pos)
+            # neg_pooler = model(b_ids_neg, b_mask_neg)
             batch_loss = loss.train_loss_fct(criterion, anchor_pooler, pos_pooler, neg_pooler)
 
             optimizer.zero_grad()
