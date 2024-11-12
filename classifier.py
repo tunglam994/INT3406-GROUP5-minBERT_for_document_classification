@@ -12,6 +12,7 @@ from bert import BertModel
 # from optimizer import AdamW
 from torch.optim import AdamW
 from tqdm import tqdm
+import pandas as pd
 
 
 TQDM_DISABLE=False
@@ -102,19 +103,30 @@ class BertDataset(Dataset):
 # create the data which is a list of (sentence, label, token for the labels)
 def create_data(filename, flag='train'):
     # specify the tokenizer
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
     num_labels = {}
     data = []
 
-    with open(filename, 'r',  encoding='utf-8') as fp:
-        for line in fp:
-            label, org_sent = line.split(' ||| ')
-            sent = org_sent.lower().strip()
-            tokens = tokenizer.tokenize("[CLS] " + sent + " [SEP]")
-            label = int(label.strip())
-            if label not in num_labels:
-                num_labels[label] = len(num_labels)
-            data.append((sent, label, tokens))
+    label_map = {
+        "Children's literature" : 0,
+        "Crime Fiction" : 1,
+        "Fantasy" : 2,
+        "Mystery" : 3,
+        "Non-fiction" : 4,
+        "Science Fiction" : 5,
+        "Suspense" : 6,
+        "Young adult literature" : 7
+    }
+
+    df = pd.read_csv(filename)
+    for _, row in df.iterrows():
+        label = label_map[row['Genres']]
+        if label not in num_labels:
+            num_labels[label] = len(num_labels)
+        sent = row['Summary'].lower().strip()
+        tokens = tokenizer.tokenize("[CLS] " + sent + " [SEP]")
+        book_authors = row['Book Author']
+        data.append((sent, label, tokens))
     print(f"load {len(data)} data from {filename}")
     if flag == 'train':
         return data, len(num_labels)
