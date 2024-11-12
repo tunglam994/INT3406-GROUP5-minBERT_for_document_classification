@@ -51,7 +51,7 @@ class BertSelfAttention(nn.Module):
     # print(scores.shape)
     # print(attention_mask.shape)
 
-    attention_mask = attention_mask[:, :512]
+    attention_mask = attention_mask[:, :, :, :512]
     scores = scores.masked_fill(attention_mask < 0, -10000)
     
     # normalize the scores
@@ -78,7 +78,7 @@ class BertSelfAttention(nn.Module):
     key_layer = self.transform(hidden_states, self.key)
     value_layer = self.transform(hidden_states, self.value)
     query_layer = self.transform(hidden_states, self.query)
-    attention_mask = attention_mask[:, :512]
+    attention_mask = attention_mask[:, :, :, :512]
     # calculate the multi-head attention 
 
     attn_value = self.attention(key_layer, query_layer, value_layer, attention_mask)
