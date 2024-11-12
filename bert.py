@@ -76,6 +76,7 @@ class BertSelfAttention(nn.Module):
     key_layer = self.transform(hidden_states, self.key)
     value_layer = self.transform(hidden_states, self.value)
     query_layer = self.transform(hidden_states, self.query)
+    attention_mask = attention_mask[:, :512]
     # calculate the multi-head attention 
 
     attn_value = self.attention(key_layer, query_layer, value_layer, attention_mask)
