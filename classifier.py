@@ -348,8 +348,8 @@ def test(args):
         }
         
         # Generate classification report
-        dev_report = classification_report(dev_true, dev_pred, target_names=label_map.values(), digits=3, zero_division=0)
-        test_report = classification_report(test_true, test_pred, target_names=label_map.values(), digits=3, zero_division=0)
+        dev_report = classification_report(dev_true, dev_pred, target_names=label_map.values(), labels=list(label_map.keys()), digits=3, zero_division=0)
+        test_report = classification_report(test_true, test_pred, target_names=label_map.values(), labels=list(label_map.keys()), digits=3, zero_division=0)
 
         # Save classification report for dev
         dev_report_path = f'{args.output_dir}/dev_report.txt'
