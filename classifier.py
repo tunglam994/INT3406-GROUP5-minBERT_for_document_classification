@@ -178,6 +178,7 @@ def model_eval(dataloader, model, device):
         b_ids = b_ids.to(device)
         b_mask = b_mask.to(device)
         b_author_embedding = b_author_embedding.to(device)
+        b_labels = b_labels.to(device)
 
         logits = model(b_ids, b_mask, b_author_embedding)
 
@@ -190,7 +191,7 @@ def model_eval(dataloader, model, device):
         logits = logits.detach().cpu().numpy()
         preds = np.argmax(logits, axis=1).flatten()
 
-        b_labels = b_labels.flatten()
+        b_labels = b_labels.cpu().numpy().flatten()
         y_true.extend(b_labels)
         y_pred.extend(preds)
         sents.extend(b_sents)
