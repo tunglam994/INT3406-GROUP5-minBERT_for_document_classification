@@ -33,7 +33,8 @@ class BertSentClassifier(torch.nn.Module):
     def __init__(self, config):
         super(BertSentClassifier, self).__init__()
         self.num_labels = config.num_labels
-        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
+        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4',config.pretrained_bert_file, use_checkpoint=config.use_checkpoint)
+        # self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
 
         # pretrain mode does not require updating bert paramters.
         for param in self.bert.parameters():
@@ -238,6 +239,8 @@ def train(args):
               'data_dir': '.',
               'author_size': 200,
               'use_author': args.use_author,
+              'pretrained_bert_file': args.pretrained_bert_file,
+              'use_checkpoint': args.use_checkpoint,
               'option': args.option}
 
     config = SimpleNamespace(**config)
@@ -387,13 +390,16 @@ def get_args():
     parser.add_argument("--save_model_path", type=str, default=None)
     parser.add_argument("--use_gpu", action='store_true')
     parser.add_argument("--use_author", action='store_true')
-    parser.add_argument("--output_dir", type=str, default="/output")
+    parser.add_argument("--output_dir", type=str, default="output")
+    parser.add_argument("--pretrained_bert_file", type=str, default="google/bert_uncased_L-4_H-256_A-4")
+    parser.add_argument("--use_checkpoint", type=bool, default=False)
 
     # hyper parameters
     parser.add_argument("--batch_size", help='sst: 64, cfimdb: 8 can fit a 12GB GPU', type=int, default=8)
     parser.add_argument("--hidden_dropout_prob", type=float, default=0.3)
     parser.add_argument("--lr", type=float, help="learning rate, default lr for 'pretrain': 1e-3, 'finetune': 1e-5",
                         default=1e-5)
+    
 
     args = parser.parse_args()
     print(f"args: {vars(args)}")
