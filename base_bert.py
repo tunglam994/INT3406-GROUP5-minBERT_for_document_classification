@@ -146,7 +146,6 @@ class BertPreTrainedModel(nn.Module):
          'output.dense': 'out_dense',
          'output.LayerNorm': 'out_layer_norm',
          'output.dropout': 'out_dropout'}
-    print(state_dict.keys())
     for key in state_dict.keys():
       new_key = None
       if "gamma" in key:
