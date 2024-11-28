@@ -34,7 +34,7 @@ class BertSentClassifier(torch.nn.Module):
     def __init__(self, config):
         super(BertSentClassifier, self).__init__()
         self.num_labels = config.num_labels
-        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
+        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4', config.pretrained_bert_file, use_checkpoint=config.use_checkpoint)
 
         # pretrain mode does not require updating bert paramters.
         for param in self.bert.parameters():
@@ -389,6 +389,8 @@ def get_args():
                         default=1e-5)
 
     parser.add_argument("--filepath", type=str, default="kaggle/working")
+    parser.add_argument("--pretrained_bert_file", type=str, default="google/bert_uncased_L-4_H-256_A-4")
+    parser.add_argument("--use_checkpoint", type=bool, default=False)
     args = parser.parse_args()
     print(f"args: {vars(args)}")
     return args
