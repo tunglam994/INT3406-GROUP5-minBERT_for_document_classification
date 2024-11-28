@@ -54,13 +54,13 @@ class BertSentClassifier(torch.nn.Module):
         # raise NotImplementedError
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(config.hidden_size + extra_dim, 256),
+            torch.nn.Linear(config.hidden_size + extra_dim, 512),
             torch.nn.ReLU(),
-            torch.nn.Dropout(0.3),
-            torch.nn.Linear(256, 128),
+            torch.nn.Dropout(0.2),
+            torch.nn.Linear(512, 256),
             torch.nn.ReLU(),
-            torch.nn.Dropout(0.3),
-            torch.nn.Linear(128, config.num_labels)
+            torch.nn.Dropout(0.2),
+            torch.nn.Linear(256, config.num_labels)
         )
         self.softmax = torch.nn.LogSoftmax(dim=-1)
 
