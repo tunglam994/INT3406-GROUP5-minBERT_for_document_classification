@@ -386,7 +386,7 @@ def get_args():
     parser.add_argument("--save_model_path", type=str, default=None)
     parser.add_argument("--use_gpu", action='store_true')
     parser.add_argument("--use_author", action='store_true')
-    parser.add_argument("--output_dir", type=str, default="/output")
+    parser.add_argument("--output_dir", type=str, default="output")
 
     # hyper parameters
     parser.add_argument("--batch_size", help='sst: 64, cfimdb: 8 can fit a 12GB GPU', type=int, default=8)
@@ -415,4 +415,4 @@ if __name__ == "__main__":
         args.save_model_path = f'{args.output_dir}/{args.save_model_path}' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     train(args)
-    # test(args)
+    test(args)
