@@ -15,6 +15,7 @@ from extras_utils import get_author_embedding, get_authors_embedding
 # from optimizer import AdamW
 from torch.optim import AdamW
 from tqdm import tqdm
+import pandas as pd
 
 import pandas as pd
 
@@ -123,9 +124,8 @@ class BertDataset(Dataset):
 
         return batches
 
-
-# create the data which is a list of (sentence, label, token for the labels)
 def create_data(filename, author2embedding_filename='data/author2embedding.pickle', flag='train'):
+
     # specify the tokenizer
     tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
     num_labels = {}
