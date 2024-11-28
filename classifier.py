@@ -365,6 +365,20 @@ def test(args):
         print("Classification Report for Test Data:")
         print(test_report)
 
+                # Save falsely classified samples
+        false_dev_out = f'{args.output_dir}/false_dev_result.txt'
+        false_test_out = f'{args.output_dir}/false_test_result.txt'
+
+        with open(false_dev_out, "w+", encoding="utf-8") as f:
+            for idx, (s, t, p) in enumerate(zip(dev_sents, dev_true, dev_pred)):
+                if t != p:
+                    f.write(f"{idx} ||| {s} ||| {t} ||| {p}\n")
+
+        with open(false_test_out, "w+", encoding="utf-8") as f:
+            for idx, (s, t, p) in enumerate(zip(test_sents, test_true, test_pred)):
+                if t != p:
+                    f.write(f"{idx} ||| {s} ||| {t} ||| {p}\n")
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -408,5 +422,5 @@ if __name__ == "__main__":
     else:
         args.save_model_path = f'{args.output_dir}/{args.save_model_path}' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
-    train(args)
-    # test(args)
+    # train(args)
+    test(args)
