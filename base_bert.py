@@ -36,7 +36,7 @@ class BertPreTrainedModel(nn.Module):
     return get_parameter_dtype(self)
 
   @classmethod
-  def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], *model_args, **kwargs):
+  def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], model_path="",use_checkpoint=False,*model_args, **kwargs):
     config = kwargs.pop("config", None)
     state_dict = kwargs.pop("state_dict", None)
     cache_dir = kwargs.pop("cache_dir", None)
@@ -109,15 +109,17 @@ class BertPreTrainedModel(nn.Module):
 
     # Instantiate model.
     model = cls(config, *model_args, **model_kwargs)
-
-    if state_dict is None:
-      try:
-        state_dict = torch.load(resolved_archive_file, map_location="cpu")
-      except Exception:
-        raise OSError(
-          f"Unable to load weights from pytorch checkpoint file for '{pretrained_model_name_or_path}' "
-          f"at '{resolved_archive_file}'"
-        )
+    if use_checkpoint==False:
+      if state_dict is None:
+        try:
+          state_dict = torch.load(resolved_archive_file, map_location="cpu")
+        except Exception:
+          raise OSError(
+            f"Unable to load weights from pytorch checkpoint file for '{pretrained_model_name_or_path}' "
+            f"at '{resolved_archive_file}'"
+          )
+    elif use_checkpoint==True:
+      state_dict = torch.load(model_path, map_location="cpu")
 
     missing_keys = []
     unexpected_keys = []
