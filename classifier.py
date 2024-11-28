@@ -217,8 +217,8 @@ def train(args):
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
     #### Load data
     # create the data and its corresponding datasets and dataloader
-    train_data, num_labels = create_data(args.train,flag='train')
-    dev_data = create_data(args.dev, flag='valid')
+    train_data, num_labels = create_data(args.train,args.author2embedding_filename,flag='train')
+    dev_data = create_data(args.dev,args.author2embedding_filename, flag='valid')
 
     train_dataset = BertDataset(train_data, args)
     dev_dataset = BertDataset(dev_data, args)
@@ -371,6 +371,7 @@ def get_args():
     parser.add_argument("--train", type=str, default="data/cfimdb-train.txt")
     parser.add_argument("--dev", type=str, default="data/cfimdb-dev.txt")
     parser.add_argument("--test", type=str, default="data/cfimdb-test.txt")
+    parser.add_argument("--author2embedding", type=str, default="data/author2embedding.pickle")
     parser.add_argument("--seed", type=int, default=11711)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--option", type=str,
@@ -390,7 +391,7 @@ def get_args():
 
     parser.add_argument("--filepath", type=str, default="kaggle/working")
     parser.add_argument("--pretrained_bert_file", type=str, default="google/bert_uncased_L-4_H-256_A-4")
-    parser.add_argument("--use_checkpoint", type=bool, default=False)
+    parser.add_argument("--use_checkpoint", action='store_true')
     args = parser.parse_args()
     print(f"args: {vars(args)}")
     return args
