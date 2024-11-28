@@ -234,7 +234,12 @@ def train(args):
               'data_dir': '.',
               'author_size': 200,
               'use_author': args.use_author,
-              'option': args.option}
+              'option': args.option,
+              'author2embedding_filename': args.author2embedding_filename,
+              'pretrained_bert_file': args.pretrained_bert_file,
+              'use_checkpoint': args.use_checkpoint,
+              'filepath': args.filepath,
+              }
 
     config = SimpleNamespace(**config)
 
