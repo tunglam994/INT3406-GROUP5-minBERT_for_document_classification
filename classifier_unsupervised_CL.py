@@ -87,17 +87,30 @@ class BertDataset(Dataset):
         return batches
 
 
-def create_data(filename, flag='train'):
+def create_data(filename, flag='train', max_length=512):
+    # specify the tokenizer
+    # tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
     num_labels = {}
     data = []
 
     with open(filename, 'r',  encoding='utf-8') as fp:
         for line in fp:
+            # label, org_sent = line.split(' ||| ')
+            # org_sent = line.split(' ||| ')
+            # sent = org_sent.lower().strip()
             sent = line.strip()
             tokens = tokenizer.tokenize("[CLS] " + sent + " [SEP]")
+            if len(tokens) > max_length:
+                tokens = tokens[:max_length]
+            # label = int(label.strip())
+            # if label not in num_labels:
+            #     num_labels[label] = len(num_labels)
             data.append((sent, tokens))
     print(f"load {len(data)} data from {filename}")
+    # if flag == 'train':
+    #     return data, len(num_labels)
+    # else:
     return data
 
 def save_model(model, optimizer, args, config, filepath):
@@ -165,7 +178,7 @@ def train(args):
 
             sim_matrix = F.cosine_similarity(emb1.unsqueeze(1), emb2.unsqueeze(0), dim=-1)
             sim_matrix = sim_matrix / 0.05
-            labels_CL = torch.arange(args.batch_size).long()
+            labels_CL = torch.arange(args.batch_size).long().to(device)
             loss = F.cross_entropy(sim_matrix, labels_CL)
 
             optimizer.zero_grad()
@@ -232,6 +245,7 @@ def get_args():
     parser.add_argument("--hidden_dropout_prob", type=float, default=0.3)
     parser.add_argument("--lr", type=float, help="learning rate, default lr for 'pretrain': 1e-3, 'finetune': 1e-5",
                         default=1e-5)
+    parser.add_argument("--filepath", type=str, default="kaggle/working")
 
     args = parser.parse_args()
     print(f"args: {vars(args)}")
@@ -239,7 +253,6 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    args.filepath = f'{args.option}-{args.epochs}-{args.lr}-second.pt' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     train(args)
     # test(args)

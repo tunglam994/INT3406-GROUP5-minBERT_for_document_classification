@@ -31,16 +31,17 @@ class Loss():
         self.cos = nn.CosineSimilarity(dim=-1)
 
     def train_loss_fct(self, criterion, a, p, n, neg_weight=0):
+        device = torch.device('cuda') if self.args.use_gpu else torch.device('cpu')
         positive_similarity = self.cos(a.unsqueeze(1), p.unsqueeze(0)) / self.args.temperature
         negative_similarity = self.cos(a.unsqueeze(1), n.unsqueeze(0)) / self.args.temperature
         
-        cosine_similarity = torch.cat([positive_similarity, negative_similarity], dim=1)
+        cosine_similarity = torch.cat([positive_similarity, negative_similarity], dim=1).to(device)
 
-        labels = torch.arange(cosine_similarity.size(0)).long()
+        labels = torch.arange(cosine_similarity.size(0)).long().to(device)
 
         weights = torch.tensor(
             [[0.0] * (cosine_similarity.size(-1) - negative_similarity.size(-1)) + [0.0] * i + [neg_weight] + [0.0] * (negative_similarity.size(-1) - i - 1) for i in range(negative_similarity.size(-1))]
-        )
+        ).to(device)
 
         cosine_similarity = cosine_similarity + weights
         loss = criterion(cosine_similarity, labels)
@@ -132,7 +133,7 @@ def create_data(filename, flag='train'):
 
     df = pd.read_csv(filename)
     for _, row in df.iterrows():
-        id = row['id']
+        # id = row['id']
         anchor = row['sent0'].lower()
         pos = row['sent1'].lower()
         neg = row['hard_neg'].lower()
@@ -212,7 +213,7 @@ def train(args):
             b_mask_pos = b_mask_pos.to(device)
             b_ids_neg = b_ids_neg.to(device)
             b_mask_neg = b_mask_neg.to(device)
-
+            
             optimizer.zero_grad()
 
             anchor_pooler = model(b_ids_anchor, b_mask_anchor)
@@ -285,6 +286,7 @@ def get_args():
     parser.add_argument("--lr", type=float, help="learning rate, default lr for 'pretrain': 1e-3, 'finetune': 1e-5",
                         default=1e-5)
     parser.add_argument("--temperature", type=float, help="temperature for supervised CL", default=0.05)
+    parser.add_argument("--filepath", type=str, default="kaggle/working")
 
     args = parser.parse_args()
     print(f"args: {vars(args)}")
@@ -292,7 +294,6 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    args.filepath = f'{args.option}-{args.epochs}-{args.lr}-second.pt' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     train(args)
     # test(args)

@@ -48,6 +48,10 @@ class BertSelfAttention(nn.Module):
     # Read the `forward` function first.
     # It already transforms everything.
     scores = torch.matmul(query, torch.transpose(key, 2, 3)) / math.sqrt(key.shape[-1])
+    # print(scores.shape)
+    # print(attention_mask.shape)
+
+    attention_mask = attention_mask[:, :, :, :512]
     scores = scores.masked_fill(attention_mask < 0, -10000)
     
     # normalize the scores
@@ -74,7 +78,9 @@ class BertSelfAttention(nn.Module):
     key_layer = self.transform(hidden_states, self.key)
     value_layer = self.transform(hidden_states, self.value)
     query_layer = self.transform(hidden_states, self.query)
+    attention_mask = attention_mask[:, :, :, :512]
     # calculate the multi-head attention 
+
     attn_value = self.attention(key_layer, query_layer, value_layer, attention_mask)
     return attn_value
 
@@ -166,6 +172,7 @@ class BertModel(BertPreTrainedModel):
     self.init_weights()
 
   def embed(self, input_ids):
+    input_ids = input_ids[:, :512]  # truncate input sequence to 512  
     input_shape = input_ids.size()
     seq_length = input_shape[1]
 
