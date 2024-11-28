@@ -309,11 +309,11 @@ def test(args):
         model.load_state_dict(saved['model'])
         model = model.to(device)
         print(f"load model from {args.save_model_path}")
-        dev_data = create_data(args.dev, flag='valid')
+        dev_data = create_data(args.dev,args.author2embedding_filename,flag='valid')
         dev_dataset = BertDataset(dev_data, args)
         dev_dataloader = DataLoader(dev_dataset, shuffle=False, batch_size=args.batch_size, collate_fn=dev_dataset.collate_fn)
 
-        test_data = create_data(args.test, flag='test')
+        test_data = create_data(args.test,args.author2embedding_filename,flag='test')
         test_dataset = BertDataset(test_data, args)
         test_dataloader = DataLoader(test_dataset, shuffle=False, batch_size=args.batch_size, collate_fn=test_dataset.collate_fn)
 
