@@ -120,6 +120,7 @@ class BertPreTrainedModel(nn.Module):
           )
     elif use_checkpoint==True:
       state_dict = torch.load(model_path, map_location="cpu")
+      state_dict = state_dict['model']
 
     missing_keys = []
     unexpected_keys = []
@@ -145,7 +146,7 @@ class BertPreTrainedModel(nn.Module):
          'output.dense': 'out_dense',
          'output.LayerNorm': 'out_layer_norm',
          'output.dropout': 'out_dropout'}
-
+    print(state_dict.keys())
     for key in state_dict.keys():
       new_key = None
       if "gamma" in key:
@@ -174,10 +175,12 @@ class BertPreTrainedModel(nn.Module):
       state_dict._metadata = metadata
 
     your_bert_params = [f"bert.{x[0]}" for x in model.named_parameters()]
-    for k in state_dict:
+    for k in list(state_dict.keys()):
       if k not in your_bert_params and not k.startswith("cls."):
         possible_rename = [x for x in k.split(".")[1:-1] if x in m.values()]
-        raise ValueError(f"{k} cannot be reload to your model, one/some of {possible_rename} we provided have been renamed")
+        del state_dict[k]
+        # raise ValueError(f"{k} cannot be reload to your model, one/some of {possible_rename} we provided have been renamed")
+        
 
     # PyTorch's `_load_from_state_dict` does not copy parameters in a module's descendants
     # so we need to apply the function recursively.
