@@ -47,6 +47,7 @@ class BertSelfAttention(nn.Module):
     # |PRIYAM|
     # Read the `forward` function first.
     # It already transforms everything.
+    # scores: shape 
     scores = torch.matmul(query, torch.transpose(key, 2, 3)) / math.sqrt(key.shape[-1])
     # print(scores.shape)
     # print(attention_mask.shape)
@@ -232,5 +233,6 @@ class BertModel(BertPreTrainedModel):
     first_tk = sequence_output[:, 0]
     first_tk = self.pooler_dense(first_tk)
     first_tk = self.pooler_af(first_tk)
-
+    # sequence_output: [batch_size, seq_len, hidden_size]
+    # first_tk: [batch_size, hidden_size]
     return {'last_hidden_state': sequence_output, 'pooler_output': first_tk}

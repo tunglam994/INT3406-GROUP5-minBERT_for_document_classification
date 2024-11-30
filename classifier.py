@@ -66,14 +66,14 @@ class BertSentClassifier(torch.nn.Module):
         self.softmax = torch.nn.LogSoftmax(dim=-1)
 
     def forward(self, input_ids, attention_mask, author_embedding):
-        # todo
-        # the final bert contextualize embedding is the hidden state of [CLS] token (the first token)
-        # raise NotImplementedError
         output = self.bert(input_ids, attention_mask)
         pooled = output['pooler_output']
+
         if self.use_author:
             pooled = torch.cat((pooled, author_embedding), 1)
-        return self.softmax(self.project(self.dropout(pooled)))
+            
+        # return self.softmax(self.project(self.dropout(pooled)))
+        return self.softmax(self.mlp(self.dropout(pooled)))
 
 # create a custom Dataset Class to be used for the dataloader
 class BertDataset(Dataset):
@@ -217,8 +217,8 @@ def train(args):
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
     #### Load data
     # create the data and its corresponding datasets and dataloader
-    train_data, num_labels = create_data(args.train,flag='train')
-    dev_data = create_data(args.dev, flag='valid')
+    train_data, num_labels = create_data(args.train,args.author2embedding_filename,flag='train')
+    dev_data = create_data(args.dev,args.author2embedding_filename, flag='valid')
 
     train_dataset = BertDataset(train_data, args)
     dev_dataset = BertDataset(dev_data, args)
@@ -234,7 +234,12 @@ def train(args):
               'data_dir': '.',
               'author_size': 200,
               'use_author': args.use_author,
-              'option': args.option}
+              'option': args.option,
+              'author2embedding_filename': args.author2embedding_filename,
+              'pretrained_bert_file': args.pretrained_bert_file,
+              'use_checkpoint': args.use_checkpoint,
+              'filepath': args.filepath,
+              }
 
     config = SimpleNamespace(**config)
 
@@ -298,17 +303,19 @@ def train(args):
 def test(args):
     with torch.no_grad():
         device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
-        saved = torch.load(args.save_model_path)
+        saved = torch.load(args.save_model_path, map_location=device)
         config = saved['model_config']
+        config.pretrained_bert_file = ""
+        config.use_checkpoint = False
         model = BertSentClassifier(config)
         model.load_state_dict(saved['model'])
         model = model.to(device)
         print(f"load model from {args.save_model_path}")
-        dev_data = create_data(args.dev, flag='valid')
+        dev_data = create_data(args.dev,args.author2embedding_filename,flag='valid')
         dev_dataset = BertDataset(dev_data, args)
         dev_dataloader = DataLoader(dev_dataset, shuffle=False, batch_size=args.batch_size, collate_fn=dev_dataset.collate_fn)
 
-        test_data = create_data(args.test, flag='test')
+        test_data = create_data(args.test,args.author2embedding_filename,flag='test')
         test_dataset = BertDataset(test_data, args)
         test_dataloader = DataLoader(test_dataset, shuffle=False, batch_size=args.batch_size, collate_fn=test_dataset.collate_fn)
 
@@ -365,26 +372,12 @@ def test(args):
         print("Classification Report for Test Data:")
         print(test_report)
 
-                # Save falsely classified samples
-        false_dev_out = f'{args.output_dir}/false_dev_result.txt'
-        false_test_out = f'{args.output_dir}/false_test_result.txt'
-
-        with open(false_dev_out, "w+", encoding="utf-8") as f:
-            for idx, (s, t, p) in enumerate(zip(dev_sents, dev_true, dev_pred)):
-                if t != p:
-                    f.write(f"{idx} ||| {s} ||| {t} ||| {p}\n")
-
-        with open(false_test_out, "w+", encoding="utf-8") as f:
-            for idx, (s, t, p) in enumerate(zip(test_sents, test_true, test_pred)):
-                if t != p:
-                    f.write(f"{idx} ||| {s} ||| {t} ||| {p}\n")
-
-
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", type=str, default="data/cfimdb-train.txt")
     parser.add_argument("--dev", type=str, default="data/cfimdb-dev.txt")
     parser.add_argument("--test", type=str, default="data/cfimdb-test.txt")
+    parser.add_argument("--author2embedding_filename", type=str, default="data/author2embedding.pickle")
     parser.add_argument("--seed", type=int, default=11711)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--option", type=str,
@@ -394,7 +387,7 @@ def get_args():
     parser.add_argument("--save_model_path", type=str, default=None)
     parser.add_argument("--use_gpu", action='store_true')
     parser.add_argument("--use_author", action='store_true')
-    parser.add_argument("--output_dir", type=str, default="/output")
+    parser.add_argument("--output_dir", type=str, default="output")
 
     # hyper parameters
     parser.add_argument("--batch_size", help='sst: 64, cfimdb: 8 can fit a 12GB GPU', type=int, default=8)
@@ -404,7 +397,7 @@ def get_args():
 
     parser.add_argument("--filepath", type=str, default="kaggle/working")
     parser.add_argument("--pretrained_bert_file", type=str, default="google/bert_uncased_L-4_H-256_A-4")
-    parser.add_argument("--use_checkpoint", type=bool, default=False)
+    parser.add_argument("--use_checkpoint", action='store_true')
     args = parser.parse_args()
     print(f"args: {vars(args)}")
     return args
@@ -413,14 +406,14 @@ if __name__ == "__main__":
     args = get_args()
 
     # Ensure the directory exists
-    output_folder = f'{args.output_dir}/'
-    if not os.path.isdir(output_folder):
-        os.makedirs(output_folder)
+    # output_folder = f'{args.output_dir}/'
+    # if not os.path.isdir(output_folder):
+    #     os.makedirs(output_folder)
 
-    if args.save_model_path is None:
-        args.save_model_path = f'{args.output_dir}/{args.option}-{args.epochs}-{args.lr}.pt' # save path
-    else:
-        args.save_model_path = f'{args.output_dir}/{args.save_model_path}' # save path
+    # if args.save_model_path is None:
+    #     args.save_model_path = f'{args.output_dir}/{args.option}-{args.epochs}-{args.lr}.pt' # save path
+    # else:
+    #     args.save_model_path = f'{args.output_dir}/{args.save_model_path}' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     # train(args)
     test(args)
