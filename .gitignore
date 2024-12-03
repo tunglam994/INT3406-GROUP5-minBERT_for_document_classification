@@ -4,3 +4,4 @@ __pycache__
 *.pt
 /debug
 analysis.ipynb
+data_eda.ipynb
