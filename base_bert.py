@@ -36,7 +36,7 @@ class BertPreTrainedModel(nn.Module):
     return get_parameter_dtype(self)
 
   @classmethod
-  def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], model_path="",use_checkpoint=False,*model_args, **kwargs):
+  def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], model_path="", use_checkpoint=False, *model_args, **kwargs):
     config = kwargs.pop("config", None)
     state_dict = kwargs.pop("state_dict", None)
     cache_dir = kwargs.pop("cache_dir", None)
@@ -242,11 +242,4 @@ class BertPreTrainedModel(nn.Module):
         "error_msgs": error_msgs,
       }
       return model, loading_info
-
-    if hasattr(config, "xla_device") and config.xla_device and is_torch_tpu_available():
-      import torch_xla.core.xla_model as xm
-
-      model = xm.send_cpu_data_to_device(model, xm.xla_device())
-      model.to(xm.xla_device())
-
     return model

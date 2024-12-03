@@ -12,7 +12,6 @@ from sklearn.metrics import classification_report, f1_score, recall_score, accur
 from tokenizer import BertTokenizer
 from bert import BertModel
 from extras_utils import get_author_embedding, get_authors_embedding
-# from optimizer import AdamW
 from torch.optim import AdamW
 from tqdm import tqdm
 import pandas as pd
@@ -31,13 +30,16 @@ def seed_everything(seed=11711):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
+
 class BertSentClassifier(torch.nn.Module):
     def __init__(self, config):
         super(BertSentClassifier, self).__init__()
         self.num_labels = config.num_labels
+        # 'from_pretrained' function in bert_base is modified to load the pretrained bert model from the local file
+        # three paremeters: the json config file, the pretrained BERT filepath, the argument 'use_checkpoint' to indicate whether to use checkpoint
         self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4', config.pretrained_bert_file, use_checkpoint=config.use_checkpoint)
 
-        # pretrain mode does not require updating bert paramters.
+        # pretrain mode (using pretrained bert) does not require updating bert paramters.
         for param in self.bert.parameters():
             if config.option == 'pretrain':
                 param.requires_grad = False
@@ -51,9 +53,8 @@ class BertSentClassifier(torch.nn.Module):
         else:   
             extra_dim = 0
         
-        # todo
-        # raise NotImplementedError
         self.dropout = torch.nn.Dropout(config.hidden_dropout_prob)
+        # add 
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(config.hidden_size + extra_dim, 512),
             torch.nn.ReLU(),
@@ -70,12 +71,10 @@ class BertSentClassifier(torch.nn.Module):
         pooled = output['pooler_output']
 
         if self.use_author:
-            pooled = torch.cat((pooled, author_embedding), 1)
-            
-        # return self.softmax(self.project(self.dropout(pooled)))
+            pooled = torch.cat((pooled, author_embedding), 1)            
         return self.softmax(self.mlp(self.dropout(pooled)))
 
-# create a custom Dataset Class to be used for the dataloader
+# create a custom Dataset Class to be used for the dataloader for CMU's book dataset
 class BertDataset(Dataset):
     def __init__(self, dataset, args):
         self.dataset = dataset
@@ -98,8 +97,6 @@ class BertDataset(Dataset):
         attention_mask = torch.LongTensor(encoding['attention_mask'])
         token_type_ids = torch.LongTensor(encoding['token_type_ids'])
         labels = torch.LongTensor(labels)
-        
-
         return token_ids, token_type_ids, attention_mask, labels, sents, author_embedding
 
     def collate_fn(self, all_data):
@@ -125,8 +122,6 @@ class BertDataset(Dataset):
         return batches
 
 def create_data(filename, author2embedding_filename='data/author2embedding.pickle', flag='train'):
-
-    # specify the tokenizer
     tokenizer = BertTokenizer.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
     num_labels = {}
     data = []
@@ -358,7 +353,6 @@ def test(args):
             f.write(dev_report)
 
         # Save classification report for test
-        # Save classification report for test
         test_report_path = f'{args.output_dir}/test_report.txt'
         with open(test_report_path, "w+", encoding="utf-8") as f:
             f.write("Classification Report for Test Data\n")
@@ -404,16 +398,6 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-
-    # Ensure the directory exists
-    # output_folder = f'{args.output_dir}/'
-    # if not os.path.isdir(output_folder):
-    #     os.makedirs(output_folder)
-
-    # if args.save_model_path is None:
-    #     args.save_model_path = f'{args.output_dir}/{args.option}-{args.epochs}-{args.lr}.pt' # save path
-    # else:
-    #     args.save_model_path = f'{args.output_dir}/{args.save_model_path}' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
-    # train(args)
+    train(args)
     test(args)

@@ -9,7 +9,6 @@ from sklearn.metrics import classification_report, f1_score, recall_score, accur
 
 from tokenizer import BertTokenizer
 from bert import BertModel
-# from optimizer import AdamW
 from torch.optim import AdamW
 from tqdm import tqdm
 import torch.nn as nn
@@ -104,7 +103,6 @@ class BertDataset(Dataset):
 
     def collate_fn(self, all_data):
         all_data.sort(key=lambda x: -len(x[1]))  # sort by number of tokens
-
         batches = []
         num_batches = int(np.ceil(len(all_data) / self.p.batch_size))
 

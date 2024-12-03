@@ -1,72 +1,25 @@
-# minbert Assignment
-by Shuyan Zhou, Zhengbao Jiang, Ritam Dutt and Brendon Boldt
+# Cài đặt minBERT và cải tiến với phương pháp knowledge injection, contrastive learning
+Thành viên:
+- Tăng Vĩnh Hà, MSV: 22028129
+- Vũ Nguyệt Hằng, MSV: 
+- Ngô Tùng Lâm, MSV:
 
-This is an exercise in developing a minimalist version of BERT, part of Carnegie Mellon University's [CS11-711 Advanced NLP](http://phontron.com/class/anlp2021/index.html).
+Repo cho bài tập lớn môn Xử lý ngôn ngữ tự nhiên, lớp 7 học kì 1 năm học 2024 - 2025. Chi tiết dự án ở trong báo cáo cuối kì. 
 
-In this assignment, you will implement some important components of the BERT model to better understanding its architecture. 
-You will then perform sentence classification on ``sst`` dataset and ``cfimdb`` dataset with the BERT model.
+# Chi tiết dự án
+- Cài đặt minBERT: 
+    - File `tokenizer` và `bert_base` được dùng để tokenize input của câu đầu vào thành các input_ids theo bộ vocab có trước của google/bert_uncased_L-4_H-256_A-4 trên HuggingFace và khởi tạo tham số cho mô hình minBERT (phương thức `init_weights`).
+    - File `bert`: cài đặt các thành phần của kiến trúc BERT (chi tiết giải thích được ghi chú trong phần comment).
+    - File `classifier`: thêm các extra layer cho BERT từ mô hình BERT cho các downstream task cụ thể, trong project này là classify.
+- Cải tiến với phương pháp knowledge injection:
+- Cải tiến với phương pháp contrastive learning: nhóm tiếp tục pretrain BERT với SimCSE framework:
+    - SimCSE unsupervised contrastive learning: sử dụng dữ liệu contrastive là các batch câu được forward qua model `bert` 2 lần (model sinh ra embedding) để được apply 2 `attention_mask` khác nhau cho positive pairs, các câu khác trong cùng 1 batch là negative pairs, hàm tối ưu là contrastive loss. Bộ dữ liệu sử dụng là: wiki1m (lấy 38% so với số lượng ban đầu). Được cài đặt trong file `classifier_unsupervised_CL`, chỉnh sửa từ file `classifier` ở chỗ load dữ liệu và hàm `train` (định nghĩa loss khác).
+    - SimCSE supervised contrastive learning: sử dụng dữ liệu contrastive là bộ ba câu anchor - positive - negative trong bộ dữ liệu NLI, hàm tối ưu là contrastive loss. Được cài đặt trong file `classifier_supervised_CL`, chỉnh sửa từ file `classifier` ở chỗ load dữ liệu và hàm `train` (định nghĩa loss khác).
+- Kết quả thử nghiệm: ở trong report cuối kì. 
+- Cách chạy các thí nghiệm: vui lòng xem trong phần phụ lục notebook Kaggle của nhóm ở trong report cuối kì. 
+# Cấu trúc repo
+- Folder `data`: dữ liệu cho các thí nghiệm
+- Folder `data_small`: dữ liệu cho việc debug nhanh trên laptop. 
 
-## Assignment Details
-
-### Important Notes
-* Follow `setup.sh` to properly setup the environment and install dependencies.
-* There is a detailed description of the code structure in [structure.md](./structure.md), including a description of which parts you will need to implement.
-* You are only allowed to use `torch`, no other external libraries are allowed (e.g., `transformers`).
-* We will run your code with the following commands, so make sure that whatever your best results are reproducible using these commands (where you replace ANDREWID with your andrew ID):
-```
-mkdir -p ANDREWID
-
-python3 classifier.py --option [pretrain/finetune] --epochs NUM_EPOCHS --lr LR --train data/sst-train.txt --dev data/sst-dev.txt --test data/sst-test.txt
-```
-## Reference accuracies: 
-
-Pretraining for SST:
-Dev Accuracy: 0.391 (0.007)
-Test Accuracy: 0.403 (0.008)
-
-Mean reference accuracies over 10 random seeds with their standard deviation shown in brackets.
-
-Finetuning for SST:
-Dev Accuracy: 0.515 (0.004)
-Test Accuracy: 0.526 (0.008)
-
-Finetuning for CFIMDB:
-Dev Accuracy: 0.966 (0.007)
-Test Accuracy: -
-
-### Submission
-The submission file should be a zip file with the following structure (assuming the andrew id is ``ANDREWID``):
-```
-ANDREWID/
-├── base_bert.py
-├── bert.py
-├── classifier.py
-├── config.py
-├── optimizer.py
-├── sanity_check.py
-├── tokenizer.py
-├── utils.py
-├── README.md
-├── structure.md
-├── sanity_check.data
-├── sst-dev-output.txt 
-├── sst-test-output.txt 
-├── cfimdb-dev-output.txt 
-├── cfimdb-test-output.txt 
-└── setup.py
-```
-
-`prepare_submit.py` can help to create(1) or check(2) the to-be-submitted zip file. It will throw assertion errors if the format is not expected, and we will *not accept submissions that fail this check*. Usage: (1) To create and check a zip file with your outputs, run `python3 prepare_submit.py path/to/your/output/dir ANDREWID`, (2) To check your zip file, run `python3 prepare_submit.py path/to/your/submit/zip/file.zip ANDREWID`
-
-### Grading
-* A+: You additionally implement something else on top of the requirements for A, and achieve significant accuracy improvements. Please write down the things you implemented and experiments you performed in the report. You are also welcome to provide additional materials such as commands to run your code in a script and training logs.
-    * perform [continued pre-training](https://arxiv.org/abs/2004.10964) using the MLM objective to do domain adaptation
-    * try [alternative fine-tuning algorithms](https://www.aclweb.org/anthology/2020.acl-main.197)
-    * add other model components on top of the model
-* A: You implement all the missing pieces and the original ``classifier.py`` with ``--option pretrain`` and ``--option finetune`` code that achieves comparable accuracy to our reference implementation
-* A-: You implement all the missing pieces and the original ``classifier.py`` with ``--option pretrain`` and ``--option finetune`` code but accuracy is not comparable to the reference.
-* B+: All missing pieces are implemented and pass tests in ``sanity_check.py`` (bert implementation) and ``optimizer_test.py`` (optimizer implementation)
-* B or below: Some parts of the missing pieces are not implemented.
-
-### Acknowledgement
-Parts of the code are from the [`transformers`](https://github.com/huggingface/transformers) library ([Apache License 2.0](./LICENSE)).
+# Acknowledgement
+Nhóm tham khảo repo code gốc [`minBERT`](https://github.com/neubig/minbert-assignment).
