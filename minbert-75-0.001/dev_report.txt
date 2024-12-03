@@ -1,0 +1,15 @@
+Classification Report for Dev Data
+                        precision    recall  f1-score   support
+
+ Children's literature      0.544     0.455     0.495       178
+         Crime Fiction      0.408     0.475     0.439       158
+               Fantasy      0.573     0.737     0.645       217
+               Mystery      0.436     0.159     0.233       151
+           Non-fiction      0.796     0.853     0.824       156
+       Science Fiction      0.560     0.758     0.644       227
+              Suspense      0.419     0.340     0.375       153
+Young adult literature      0.555     0.481     0.516       189
+
+              accuracy                          0.551      1429
+             macro avg      0.536     0.532     0.521      1429
+          weighted avg      0.540     0.551     0.533      1429
