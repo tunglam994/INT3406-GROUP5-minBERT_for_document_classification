@@ -37,6 +37,7 @@ class BertPreTrainedModel(nn.Module):
 
   @classmethod
   def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], model_path="", use_checkpoint=False, *model_args, **kwargs):
+  def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], model_path="",use_checkpoint=False, *model_args, **kwargs):
     config = kwargs.pop("config", None)
     state_dict = kwargs.pop("state_dict", None)
     cache_dir = kwargs.pop("cache_dir", None)
