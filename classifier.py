@@ -12,12 +12,7 @@ from sklearn.metrics import classification_report, f1_score, recall_score, accur
 from tokenizer import BertTokenizer
 from bert import BertModel
 from extras_utils import get_author_embedding, get_authors_embedding
-<<<<<<< HEAD
 from torch.optim import AdamW
-=======
-from optimizer import AdamW
-# from torch.optim import AdamW
->>>>>>> cl-kg
 from tqdm import tqdm
 import pandas as pd
 
@@ -40,14 +35,9 @@ class BertSentClassifier(torch.nn.Module):
     def __init__(self, config):
         super(BertSentClassifier, self).__init__()
         self.num_labels = config.num_labels
-<<<<<<< HEAD
         # 'from_pretrained' function in bert_base is modified to load the pretrained bert model from the local file
         # three paremeters: the json config file, the pretrained BERT filepath, the argument 'use_checkpoint' to indicate whether to use checkpoint
         self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4', config.pretrained_bert_file, use_checkpoint=config.use_checkpoint)
-=======
-        self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4',config.pretrained_bert_file, use_checkpoint=config.use_checkpoint)
-        # self.bert = BertModel.from_pretrained('google/bert_uncased_L-4_H-256_A-4')
->>>>>>> cl-kg
 
         # pretrain mode (using pretrained bert) does not require updating bert paramters.
         for param in self.bert.parameters():
@@ -239,18 +229,12 @@ def train(args):
               'data_dir': '.',
               'author_size': 200,
               'use_author': args.use_author,
-<<<<<<< HEAD
               'option': args.option,
               'author2embedding_filename': args.author2embedding_filename,
               'pretrained_bert_file': args.pretrained_bert_file,
               'use_checkpoint': args.use_checkpoint,
               'filepath': args.filepath,
               }
-=======
-              'pretrained_bert_file': args.pretrained_bert_file,
-              'use_checkpoint': args.use_checkpoint,
-              'option': args.option}
->>>>>>> cl-kg
 
     config = SimpleNamespace(**config)
 
@@ -398,18 +382,12 @@ def get_args():
     parser.add_argument("--use_gpu", action='store_true')
     parser.add_argument("--use_author", action='store_true')
     parser.add_argument("--output_dir", type=str, default="output")
-<<<<<<< HEAD
-=======
-    parser.add_argument("--pretrained_bert_file", type=str, default="google/bert_uncased_L-4_H-256_A-4")
-    parser.add_argument("--use_checkpoint", type=bool, default=False)
->>>>>>> cl-kg
 
     # hyper parameters
     parser.add_argument("--batch_size", help='sst: 64, cfimdb: 8 can fit a 12GB GPU', type=int, default=8)
     parser.add_argument("--hidden_dropout_prob", type=float, default=0.3)
     parser.add_argument("--lr", type=float, help="learning rate, default lr for 'pretrain': 1e-3, 'finetune': 1e-5",
                         default=1e-5)
-    
 
     parser.add_argument("--filepath", type=str, default="kaggle/working")
     parser.add_argument("--pretrained_bert_file", type=str, default="google/bert_uncased_L-4_H-256_A-4")
