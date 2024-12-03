@@ -13,8 +13,8 @@ from sklearn.metrics import classification_report, f1_score, recall_score, accur
 from tokenizer import BertTokenizer
 from bert import BertModel
 from extras_utils import get_author_embedding, get_authors_embedding
-# from optimizer import AdamW
-from torch.optim import AdamW
+from optimizer import AdamW
+# from torch.optim import AdamW
 from tqdm import tqdm
 
 
