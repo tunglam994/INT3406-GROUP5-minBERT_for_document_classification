@@ -69,7 +69,8 @@ class BertSentClassifier(torch.nn.Module):
         # the final bert contextualize embedding is the hidden state of [CLS] token (the first token)
         # raise NotImplementedError
         output = self.bert(input_ids, attention_mask)
-        pooled = output['pooler_output']
+        last_hidden_state = output['last_hidden_state']
+        pooled = last_hidden_state[:, 0, :]
 
         if self.use_author:
             pooled = torch.cat((pooled, author_embedding), 1)
